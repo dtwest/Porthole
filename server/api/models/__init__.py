@@ -1,0 +1,1 @@
+from server.api.models.scan import SCAN_FIELDS

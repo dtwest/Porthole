@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  web:
+    container_name: pickle
+    build:
+      context: .
+    ports:
+      - 8000:5000
+    networks:
+      - pickle_net
+    volumes:
+      - ./:/porthole
+    depends_on:
+      - db
+  db:
+    image: mysql
+    container_name: mysqldb
+    networks:
+      - pickle_net
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=porthole
+    volumes:
+      - mysql:/var/lib/mysql
+      - mysql_config:/etc/mysql
+volumes:
+  mysql:
+  mysql_config:
+
+networks:
+  pickle_net:
