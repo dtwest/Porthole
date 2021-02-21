@@ -10,11 +10,11 @@ You need [docker](https://docs.docker.com/get-docker/) to be installed and confi
 
 You need python, and pip installed. This project is built using [python 3.9.x](https://www.python.org/downloads/release/python-390/), but will work so long as you are running python 3.8 or greater.
 
-Finally you should have [node & npm](https://nodejs.org/en/) installed, as well as have / know about [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html#create-react-app).
+Finally you should have [node & npm](https://nodejs.org/en/) installed.
 
 **Note**: _Examples and setup scripts are for unix / linux based systems, not windows._
 
-### Setting Up Your Envirionment
+### Setting Up Your Environment
 
 Clone the repo and run the setup script, which will:
 
@@ -53,13 +53,17 @@ docker-compose -f docker-compose.dev.yml up --build --remove-orphans
 
 This is not a production solution, it's a toy application.
 
-If for instance you wanted to make this more of a prod service you could do tweak this with some re-work.
+If for instance you wanted to make this more of a prod service you could do breaking this app up, and ditching the queue implementation for a better one.
+
+#### Logging
+
+I'm logging with `gunicorn.error` only for demonstration purposes, so that the logs appear in the terminal when you compose application. Don't do this in prod.
 
 #### NMAP
 
 Right now the app is using a tcp scan strategy as I'm running under the assumption that not everyone who runs this will have root access which is required to do a use a syn scan strategy.
 
-Additionally, to make sure that scans are resonably fast for the purposes of demonstration, I'm not using options such as `-p-` to scan all ports.
+Additionally, to make sure that scans are reasonably fast for the purposes of demonstration, I'm not using options such as `-p-` to scan all ports.
 
 If you have root access, and want it all... well tweak the options, and scan strategy.
 
@@ -71,7 +75,7 @@ This app has one table, and MySQL was chosen because it was the fastest DB to st
 
 #### Queues
 
-If you were to make this a prod app, the biggest thing you'd change would most likely be the queue implementation. Specifically, I would break the solution up such that there were the following commonponents:
+If you were to make this a prod app, the biggest thing you'd change would most likely be the queue implementation. Specifically, I would break the solution up such that there were the following components:
 
 - API Endpoints, potentially run lambdas & API Gateway. Write to datastore and then put an event onto an SQS queue
 - Datastore, potentially running Aurora MySQL / Postgres

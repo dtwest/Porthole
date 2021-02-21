@@ -1,5 +1,8 @@
 {
   "python.pythonPath": "env/bin/python3",
   "editor.detectIndentation": true,
-  "editor.insertSpaces": true
+  "editor.insertSpaces": true,
+  "cSpell.ignoreWords": [
+    "portid"
+  ]
 }

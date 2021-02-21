@@ -1,4 +1,6 @@
 #!/bin/bash
+mkdir -p ./build
 
-# Build React
+cp ./client/* ./build
+
 docker build --tag porthole .
