@@ -1,6 +1,14 @@
 # Porthole
 
-Toy application which exposes an API to do port scanning
+<p align="center">
+  <img src="./client/assets/porthole.png?raw=true"
+    alt="Porthole icon"
+    width="250"
+    height="250"
+  />
+</p>
+
+A Toy application which exposes an API to do port scanning
 
 ## Getting Started
 

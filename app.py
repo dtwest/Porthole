@@ -4,7 +4,7 @@ from werkzeug.exceptions import HTTPException, BadRequest
 from server.database import init_database
 from server.api import ScanApi, ScanListApi, ScanByAddressApi
 
-app = Flask(__name__, static_folder="build/static", template_folder="build")
+app = Flask(__name__, static_folder="client/build/static", template_folder="client/build")
 api = Api(app)
 init_database(app)
 
