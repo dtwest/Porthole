@@ -4,7 +4,7 @@ import Fab from '@material-ui/core/Fab';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { Route, Switch } from 'react-router-dom';
-import './app.css';
+import './App.css';
 import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';

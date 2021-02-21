@@ -51,6 +51,13 @@ docker-compose -f docker-compose.dev.yml up --build --remove-orphans
 # smack CTRL + C a couple times then teardown to stop the stack
 ```
 
+#### Clean Build & Start
+
+```bash
+docker-compose -f docker-compose.dev.yml build --no-cache && docker-compose -f docker-compose.dev.yml up --remove-orphans
+# smack CTRL + C a couple times then teardown to stop the stack
+```
+
 ### Teardown
 
 ```bash
