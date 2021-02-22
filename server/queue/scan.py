@@ -50,8 +50,8 @@ class ScanQueue:
 
         # Change this to nmap.nmap_syn_scan(address, '-p-')
         # to scan all ports in a sane time... if you have root access
-        # but for this app we'll scan the top 1000 ports using tcp scan
-        results = nmap.nmap_tcp_scan(item.address)
+        # but for this app we'll scan the top 100 ports using tcp scan
+        results = nmap.nmap_tcp_scan(item.address, args='-F')
         ports = '-'
         log.info(results['runtime']['summary'])
         for k, v in results.items():

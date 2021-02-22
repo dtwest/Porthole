@@ -27,13 +27,13 @@ const SideDrawer = (props: {links: Route[]}) => {
       >
         <List component="nav">
             <Link className="navLink" style={{color: "black"}} to="/" >
-              <ListItem button>
+              <ListItem  color='white' button>
                 <ListItemText color='white' primary="Home"/>
               </ListItem>
             </Link>
           {props.links.map(({ title, to }) => (
             <Link className="navLink" style={{color: "black"}} to={to}>
-               <ListItem button>
+               <ListItem color='white' button>
                  <ListItemText color='white' primary={title}/>
                </ListItem>
              </Link>

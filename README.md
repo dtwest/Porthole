@@ -78,7 +78,7 @@ I'm logging with `gunicorn.error` only for demonstration purposes, so that the l
 
 Right now the app is using a tcp scan strategy as I'm running under the assumption that not everyone who runs this will have root access which is required to do a use a syn scan strategy.
 
-Additionally, to make sure that scans are reasonably fast for the purposes of demonstration, I'm not using options such as `-p-` to scan all ports.
+Additionally, to make sure that scans are reasonably fast for the purposes of demonstration, I'm not using options such as `-p-` to scan all ports, and I'm doing -F for speed.
 
 If you have root access, and want it all... well tweak the options, and scan strategy.
 
