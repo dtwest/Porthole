@@ -37,6 +37,9 @@ class ScanListApi(Resource):
         scans = []
 
         for address in addresses:
+            if not address:
+                abort(400) # theoretically someone can submit null as a value
+
             scan = Scan(address=address)
             database.session.add(scan)
             scans.append(scan)

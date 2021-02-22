@@ -1,5 +1,5 @@
 import { Drawer, IconButton, List, ListItem, ListItemText } from '@material-ui/core';
-import { Brightness4Rounded, Brightness7Rounded, Menu } from '@material-ui/icons';
+import { Menu } from '@material-ui/icons';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Route } from '../routes';
@@ -28,13 +28,13 @@ const SideDrawer = (props: {links: Route[]}) => {
         <List component="nav">
             <Link className="navLink" style={{color: "black"}} to="/" >
               <ListItem button>
-                <ListItemText primary="Home"/>
+                <ListItemText color='white' primary="Home"/>
               </ListItem>
             </Link>
           {props.links.map(({ title, to }) => (
             <Link className="navLink" style={{color: "black"}} to={to}>
                <ListItem button>
-                 <ListItemText primary={title}/>
+                 <ListItemText color='white' primary={title}/>
                </ListItem>
              </Link>
           ))}
