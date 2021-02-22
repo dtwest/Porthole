@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
     padding: '2px 4px',
     display: 'flex',
     alignItems: 'center',
-    width: '80%',
+    width: '100%',
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -102,7 +102,7 @@ export default function InitiateScanForm() {
             {state.scans?.map((scan: Scan) => (
               <li>
                 <Link href={scan.uri} color='textPrimary'>
-                  {`localhost:8000/${scan.uri}`}
+                  {`localhost:8000${scan.uri}`}
                 </Link>
               </li>
             ))}

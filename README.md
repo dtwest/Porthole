@@ -47,7 +47,7 @@ cd Porthole
 ### Start
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build --remove-orphans
+. ./build.sh && docker-compose -f docker-compose.dev.yml up --remove-orphans
 # smack CTRL + C a couple times then teardown to stop the stack
 ```
 

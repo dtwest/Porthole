@@ -1,8 +1,8 @@
-import asyncio
 import logging
 import nmap3
-import threading
 import sqlalchemy
+import concurrent.futures
+from typing import Set
 from sqlalchemy.orm import sessionmaker, scoped_session
 from server.database.scan import Scan, database
 from server.database.constants import database_connection_uri
@@ -11,23 +11,16 @@ log = logging.getLogger('gunicorn.error')
 
 
 class ScanQueue:
-    _queue: asyncio.Queue
-    _event_loop: asyncio.AbstractEventLoop
-    _loop_thread: threading.Thread
+    _executor: concurrent.futures.ProcessPoolExecutor
+    _futures: Set[concurrent.futures.Future]
     listening: bool
     max_concurrent: int
 
-    def __init__(self, max_concurrent: int = 10):
+    def __init__(self, max_concurrent: int = 5):
         self.max_concurrent = max_concurrent
         self.listening = True
-        self._queue = asyncio.Queue()
-        self._event_loop = asyncio.get_event_loop()
-        self._loop_thread = threading.Thread(target=self._loop, args=(self._event_loop,))
-        self._loop_thread.start()
-
-    def _loop(self, loop: asyncio.AbstractEventLoop) -> None:
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.listen_for_scans())
+        self._futures = set()
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrent)
 
     @property
     def _scoped_session(self) -> sqlalchemy.orm.scoping.scoped_session:
@@ -41,22 +34,16 @@ class ScanQueue:
         )
                 
     def add_scan_to_queue(self, scan: Scan) -> None:
-        log.info(f'Adding scan request for "{scan.address}" onto the queue.')
-        self._event_loop.call_soon_threadsafe(self._queue.put_nowait, scan)
+        log.info(f'Submitting scan request for "{scan.address}" to the executor.')
+        future = self._executor.submit(self.handle_item, scan)
+        self._futures.add(future)
+        
+        def remove_from_futures(*args, **kwargs):
+            self._futures.remove(future)
 
-    async def listen_for_scans(self) -> None:
-        while self.listening:
-            try:
-                tasks = []
-                for _ in range(min(self.max_concurrent, max(1, self._queue.qsize()))):
-                    item = await self._queue.get()
-                    tasks.append(asyncio.create_task(self.handle_item(item)))
+        future.add_done_callback(remove_from_futures)
 
-                await asyncio.gather(*tasks)
-            except Exception as e:
-                log.error('Error when processing events in queue!', exec_info=e)
-
-    async def handle_item(self, item: Scan) -> None:
+    def handle_item(self, item: Scan) -> None:
         log.info(f'Initiating scan for "{item.address}"')
         nmap = nmap3.NmapScanTechniques()
         session = self._scoped_session()
@@ -81,4 +68,6 @@ class ScanQueue:
     def __del__(self, *args, **kwargs) -> None:
         log.info(f'Stopping the scan queue listener!')
         self.listening = False
-        self._loop_thread.join()
+        for future in self._futures:
+            future.cancel()
+        self._executor.shutdown()
