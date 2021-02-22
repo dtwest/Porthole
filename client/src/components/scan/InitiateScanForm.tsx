@@ -7,8 +7,10 @@ import IconButton from '@material-ui/core/IconButton';
 import DirectionsIcon from '@material-ui/icons/Directions';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Fade from '@material-ui/core/Fade';
-import Link from '@material-ui/core/Link';
+import { Link } from 'react-router-dom';
 import Scan from './scan';
+import SnackBar from '../SnackBar';
+import { Props as SnackBarProps } from '../SnackBar';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,13 +36,39 @@ export interface InitiateScanFormState {
   loading: boolean;
   scans?: Scan[];
   addresses?: string;
+  snackBarProps: SnackBarProps
 }
 
 export default function InitiateScanForm() {
   const classes = useStyles();
   const [state, setState] = React.useState({
     loading: false,
+    snackBarProps: {
+      snackBarProps: {
+        open: false,
+        autoHideDuration: 3000,
+      },
+      alertProps: {
+        severity: 'info'
+      },
+      message: 'Welcome!'
+    }
   } as InitiateScanFormState);
+
+
+
+  const snackBarOnClose = (_: React.SyntheticEvent<Element, Event>, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    state.snackBarProps.snackBarProps.open = false
+    setState((prevState: InitiateScanFormState) => {
+      const clone = JSON.parse(JSON.stringify(prevState)) as InitiateScanFormState
+      clone.snackBarProps.snackBarProps.open = false
+
+      return clone
+    });
+  };
 
   const handleClick = () => {
     setState({...state, loading: true})
@@ -54,17 +82,31 @@ export default function InitiateScanForm() {
       })
     }).then(response => response.json())
       .then((data: {scans: Scan[]}) => {
-        setState({
-          ...state,
-          loading: false,
-          scans: data.scans
+        setState((prevState: InitiateScanFormState) => {
+          const clone = JSON.parse(JSON.stringify(prevState)) as InitiateScanFormState
+          clone.snackBarProps.alertProps.onClose = snackBarOnClose
+          clone.snackBarProps.alertProps.severity = 'success'
+          clone.snackBarProps.snackBarProps.onClose = snackBarOnClose
+          clone.snackBarProps.message = 'Scan Request Creation Was Successful!'
+          clone.snackBarProps.snackBarProps.open = true
+          clone.scans = data.scans
+          clone.loading = false
+
+          return clone
         })
       })
       .catch(error => {
         console.error(error)
-        setState({
-          ...state,
-          loading: false,
+        setState((prevState: InitiateScanFormState) => {
+          const clone = JSON.parse(JSON.stringify(prevState)) as InitiateScanFormState
+          clone.snackBarProps.alertProps.onClose = snackBarOnClose
+          clone.snackBarProps.alertProps.severity = 'error'
+          clone.snackBarProps.snackBarProps.onClose = snackBarOnClose
+          clone.snackBarProps.message = 'Error Encountered When Creating Request!'
+          clone.snackBarProps.snackBarProps.open = true
+          clone.loading = false
+
+          return clone
         })
       })
   }
@@ -101,13 +143,14 @@ export default function InitiateScanForm() {
           <ul>
             {state.scans?.map((scan: Scan) => (
               <li>
-                <Link href={scan.uri} color='textPrimary'>
-                  {`localhost:8000${scan.uri}`}
+                <Link style={{color: "white"}} to={`/Scans/${scan.uri.split('/').pop()}`}>
+                  {`localhost:8000/Scans/${scan.uri.split('/').pop()}`}
                 </Link>
               </li>
             ))}
           </ul>
       </Fade>
+      <SnackBar {...state.snackBarProps}/>
     </Fragment>
   );
 }

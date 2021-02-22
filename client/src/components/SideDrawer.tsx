@@ -26,13 +26,13 @@ const SideDrawer = (props: {links: Route[]}) => {
         onKeyDown={toggleDrawer(false)}
       >
         <List component="nav">
-            <Link className="navLink" style={{color: "black"}} to="/" >
+            <Link className="navLink" style={{color: "white"}} to="/" >
               <ListItem  color='white' button>
                 <ListItemText color='white' primary="Home"/>
               </ListItem>
             </Link>
           {props.links.map(({ title, to }) => (
-            <Link className="navLink" style={{color: "black"}} to={to}>
+            <Link className="navLink" style={{color: "white"}} to={to}>
                <ListItem color='white' button>
                  <ListItemText color='white' primary={title}/>
                </ListItem>

@@ -29,7 +29,9 @@ class ScanListApi(Resource):
 
         return {
             "scans": [marshal(scan, SCAN_FIELDS) for scan in scans.items],
-            "next": scans.has_next
+            "next": scans.has_next,
+            "page": scans.page,
+            "pages": scans.pages,
         }
     
     def post(self) -> dict:
@@ -62,6 +64,8 @@ class ScanByAddressApi(Resource):
 
         return {
             "scans": [marshal(scan, SCAN_FIELDS) for scan in scans.items],
-            "next": scans.has_next
+            "next": scans.has_next,
+            "page": scans.page,
+            "pages": scans.pages,
         }
 
