@@ -51,6 +51,8 @@ cd Porthole
 # smack CTRL + C a couple times then teardown to stop the stack
 ```
 
+From here go to [localhost:8000](http://localhost:8000), and submit addresses to scan.
+
 #### Clean Build & Start
 
 ```bash
