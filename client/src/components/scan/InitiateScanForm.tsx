@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom';
 import Scan from './scan';
 import SnackBar from '../SnackBar';
 import { Props as SnackBarProps } from '../SnackBar';
+import { Color } from '@material-ui/lab/Alert';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -72,6 +74,19 @@ export default function InitiateScanForm() {
 
   const handleClick = () => {
     setState({...state, loading: true})
+      type Data = {scans: Scan[]}
+      const getNewState = (appState: InitiateScanFormState, message: string, severity?: Color, data?: Data) => {
+        const clone = JSON.parse(JSON.stringify(appState)) as InitiateScanFormState
+        clone.snackBarProps.alertProps.onClose = snackBarOnClose
+        clone.snackBarProps.alertProps.severity = severity
+        clone.snackBarProps.snackBarProps.onClose = snackBarOnClose
+        clone.snackBarProps.message = message
+        clone.snackBarProps.snackBarProps.open = true
+        clone.scans = data?.scans || []
+        clone.loading = false
+        return clone
+     }
+
     fetch('http://localhost:8000/api/v1.0/scans', {
       method: 'POST',
       headers: {
@@ -80,35 +95,24 @@ export default function InitiateScanForm() {
       body: JSON.stringify({
         addresses: state.addresses?.split(',').map(str => str.trim())
       })
-    }).then(response => response.json())
-      .then((data: {scans: Scan[]}) => {
-        setState((prevState: InitiateScanFormState) => {
-          const clone = JSON.parse(JSON.stringify(prevState)) as InitiateScanFormState
-          clone.snackBarProps.alertProps.onClose = snackBarOnClose
-          clone.snackBarProps.alertProps.severity = 'success'
-          clone.snackBarProps.snackBarProps.onClose = snackBarOnClose
-          clone.snackBarProps.message = 'Scan Request Creation Was Successful!'
-          clone.snackBarProps.snackBarProps.open = true
-          clone.scans = data.scans
-          clone.loading = false
+    }).then(response => {
+      if (response.status > 299) {
+        throw Error(`${response.status}: ${response.statusText}!`)
+      }
 
-          return clone
-        })
+      return response.json()
+    })
+    .then((data: {scans: Scan[]}) => {
+      setState((prevState: InitiateScanFormState) => {
+        return getNewState(prevState, 'Scan Request Creation Was Successful!', 'success', data)
       })
-      .catch(error => {
-        console.error(error)
-        setState((prevState: InitiateScanFormState) => {
-          const clone = JSON.parse(JSON.stringify(prevState)) as InitiateScanFormState
-          clone.snackBarProps.alertProps.onClose = snackBarOnClose
-          clone.snackBarProps.alertProps.severity = 'error'
-          clone.snackBarProps.snackBarProps.onClose = snackBarOnClose
-          clone.snackBarProps.message = 'Error Encountered When Creating Request!'
-          clone.snackBarProps.snackBarProps.open = true
-          clone.loading = false
-
-          return clone
-        })
+    })
+    .catch(error => {
+      console.error(error)
+      setState((prevState: InitiateScanFormState) => {
+        return getNewState(prevState, error.message, 'error')
       })
+    })
   }
 
   return (

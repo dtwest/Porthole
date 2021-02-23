@@ -1,3 +1,4 @@
+import re
 from server.database.scan import Scan, database
 from server.api.models import SCAN_FIELDS
 from server.queue import scan_queue
@@ -40,8 +41,8 @@ class ScanListApi(Resource):
         scans = []
 
         for address in addresses:
-            if not address:
-                abort(400) # theoretically someone can submit null as a value
+            if not address or not re.match(r"^[a-zA-Z0-9\.]+$", address):
+                abort(400)
 
             scan = Scan(address=address)
             database.session.add(scan)
