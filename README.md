@@ -53,6 +53,13 @@ cd Porthole
 
 From here go to [localhost:8000](http://localhost:8000), and submit addresses to scan.
 
+If you'd prefer to interact with the API directly you can, I suggest using [postman](https://www.postman.com/). The endpoints are:
+
+- [/api/v1.0/scans](http://localhost:8000/api/v1.0/scans) to retrieve all scans (paginated ?page_size=N&page=M)
+- [/api/v1.0/scans/<string:id>](http://localhost:8000/api/v1.0/scans/<string:id>) to pull up a scan
+- [/api/v1.0/scans/address/<string:address>](http://localhost:8000/api/v1.0/scans/address/<string:address>) to retrieve all scans for an address(paginated ?page_size=N&page=M), for example pull last two scans for "1.1.1.1"
+  - [/api/v1.0/scans/address/1.1.1.1?page=1&page_size=2](http://localhost:8000/api/v1.0/scans/address/1.1.1.1?page=1&page_size=2)
+
 #### Clean Build & Start
 
 ```bash
