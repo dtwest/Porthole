@@ -32,6 +32,7 @@ class ScanListApi(Resource):
             "next": scans.has_next,
             "page": scans.page,
             "pages": scans.pages,
+            "total": scans.total
         }
     
     def post(self) -> dict:
@@ -67,5 +68,6 @@ class ScanByAddressApi(Resource):
             "next": scans.has_next,
             "page": scans.page,
             "pages": scans.pages,
+            "total": scans.total
         }
 
