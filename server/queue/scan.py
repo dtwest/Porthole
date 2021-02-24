@@ -11,7 +11,7 @@ log = logging.getLogger('gunicorn.error')
 
 
 class ScanQueue:
-    _executor: concurrent.futures.ProcessPoolExecutor
+    _executor: concurrent.futures.ThreadPoolExecutor
     _futures: Set[concurrent.futures.Future]
     listening: bool
     max_concurrent: int
