@@ -7,6 +7,19 @@ from flask_restful import Resource, reqparse, marshal, request, abort
 from typing import List
 
 
+def getDeltaPorts(current: Scan, other: Scan):
+    if other is None:
+        return {"add": current.ports, "remove": ""}
+
+    new_ports = set(current.ports.split(","))
+    old_ports = set(current.ports.split(","))
+
+    addition = ",".join([port for port in new_ports if port not in old_ports])
+    removal = ",".join([port for port in old_ports if port not in new_ports])
+
+    return {"add": addition, "remove": removal} if addition or removal else None
+
+
 class ScanApi(Resource):
     def __init__(self, *args, **kwargs):
         super(ScanApi, self, *args, **kwargs)
@@ -16,7 +29,22 @@ class ScanApi(Resource):
         if not scan:
             abort(404)
 
-        return {"scan": marshal(scan, SCAN_FIELDS)}
+        output = {"scan": marshal(scan, SCAN_FIELDS)}
+
+        previous_scan = (
+            Scan.query.filter(Scan.address == scan.address, Scan.created_date < scan.created_date)
+            .order_by(Scan.created_date.desc())
+            .first()
+        )
+
+        if previous_scan:
+            output["previous_scan"] = marshal(previous_scan, SCAN_FIELDS)["uri"]
+
+        delta = getDeltaPorts(scan, previous_scan)
+        if delta:
+            output["delta_ports"] = delta
+
+        return output
 
 
 class ScanListApi(Resource):

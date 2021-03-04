@@ -148,7 +148,7 @@ export default function InitiateScanForm() {
             {state.scans?.map((scan: Scan) => (
               <li>
                 <Link style={{color: "white"}} to={`/Addresses/${scan.address}`}>
-                  {`localhost:8000/Addresses/${scan.address}`}
+                  {`localhost:8000/Addresses/${scan.address}`} - {scan.uri}
                 </Link>
               </li>
             ))}
