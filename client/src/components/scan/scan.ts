@@ -1,6 +1,7 @@
 export interface Scan {
   address: string;
   ports: string;
+  updated_date: string;
   created_date: string;
   uri: string;
 }

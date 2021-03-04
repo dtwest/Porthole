@@ -6,6 +6,7 @@ from flask import Flask
 from flask_restful import Resource, reqparse, marshal, request, abort
 from typing import List
 
+
 class ScanApi(Resource):
     def __init__(self, *args, **kwargs):
         super(ScanApi, self, *args, **kwargs)
@@ -15,17 +16,18 @@ class ScanApi(Resource):
         if not scan:
             abort(404)
 
-        return { "scan": marshal(scan, SCAN_FIELDS) }
+        return {"scan": marshal(scan, SCAN_FIELDS)}
+
 
 class ScanListApi(Resource):
     def __init__(self, *args, **kwargs):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument("addresses", type=list, location="json", help='No addresses provided!')
+        self.reqparse.add_argument("addresses", type=list, location="json", help="No addresses provided!")
         super(ScanListApi, self, *args, **kwargs)
 
     def get(self) -> List[dict]:
-        page = int(request.args.get('page', '1'))
-        page_size = int(request.args.get('page_size', '10'))
+        page = int(request.args.get("page", "1"))
+        page_size = int(request.args.get("page_size", "10"))
         scans = Scan.query.order_by(Scan.created_date.desc()).paginate(page, page_size, error_out=False)
 
         return {
@@ -33,42 +35,58 @@ class ScanListApi(Resource):
             "next": scans.has_next,
             "page": scans.page,
             "pages": scans.pages,
-            "total": scans.total
+            "total": scans.total,
         }
-    
+
     def post(self) -> dict:
-        addresses = self.reqparse.parse_args()['addresses']
+        addresses = set(self.reqparse.parse_args()["addresses"])
         scans = []
+        existing_scans = []
 
         for address in addresses:
             if not address or not re.match(r"^[a-zA-Z0-9\.]+$", address):
                 abort(400)
+
+            existing_scan = Scan.query.filter_by(address=address, ports=None).order_by(Scan.created_date.desc()).first()
+
+            if existing_scan:
+                # redrive on empty queue
+                if not len(scan_queue):
+                    scans.append(existing_scan)
+                else:
+                    existing_scans.append(existing_scan)
+
+                continue
 
             scan = Scan(address=address)
             database.session.add(scan)
             scans.append(scan)
 
         database.session.commit()
-        
+
         for scan in scans:
             scan_queue.add_scan_to_queue(scan)
 
-        return { "scans": [marshal(scan, SCAN_FIELDS) for scan in scans]}, 201
+        return {"scans": [marshal(scan, SCAN_FIELDS) for scan in [*scans, *existing_scans]]}, 201
+
 
 class ScanByAddressApi(Resource):
     def __init__(self, *args, **kwargs):
         super(ScanByAddressApi, self, *args, **kwargs)
 
     def get(self, address: str) -> List[dict]:
-        page = int(request.args.get('page', '1'))
-        page_size = int(request.args.get('page_size', '10'))
-        scans = Scan.query.filter_by(address=address).order_by(Scan.created_date.desc()).paginate(page, page_size, error_out=False)
+        page = int(request.args.get("page", "1"))
+        page_size = int(request.args.get("page_size", "10"))
+        scans = (
+            Scan.query.filter_by(address=address)
+            .order_by(Scan.created_date.desc())
+            .paginate(page, page_size, error_out=False)
+        )
 
         return {
             "scans": [marshal(scan, SCAN_FIELDS) for scan in scans.items],
             "next": scans.has_next,
             "page": scans.page,
             "pages": scans.pages,
-            "total": scans.total
+            "total": scans.total,
         }
-

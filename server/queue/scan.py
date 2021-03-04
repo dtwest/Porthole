@@ -2,12 +2,13 @@ import logging
 import nmap3
 import sqlalchemy
 import concurrent.futures
+from datetime import datetime
 from typing import Set
 from sqlalchemy.orm import sessionmaker, scoped_session
 from server.database.scan import Scan, database
 from server.database.constants import database_connection_uri
 
-log = logging.getLogger('gunicorn.error')
+log = logging.getLogger("gunicorn.error")
 
 
 class ScanQueue:
@@ -22,22 +23,21 @@ class ScanQueue:
         self._futures = set()
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.max_concurrent)
 
+        # Redrive on startup, oldest first
+        dead_scans = self._scoped_session().query(Scan).filter_by(ports=None).order_by(Scan.created_date.asc())
+        for scan in dead_scans:
+            self.add_scan_to_queue(scan)
+
     @property
     def _scoped_session(self) -> sqlalchemy.orm.scoping.scoped_session:
         engine = sqlalchemy.create_engine(database_connection_uri)
-        return scoped_session(
-            sessionmaker(
-                autocommit=False,
-                autoflush=False,
-                bind=engine
-            )
-        )
-                
+        return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+
     def add_scan_to_queue(self, scan: Scan) -> None:
         log.info(f'Submitting scan request for "{scan.address}" to the executor.')
         future = self._executor.submit(self.handle_item, scan)
         self._futures.add(future)
-        
+
         def remove_from_futures(*args, **kwargs):
             self._futures.remove(future)
 
@@ -51,22 +51,26 @@ class ScanQueue:
         # Change this to nmap.nmap_syn_scan(address, '-p-')
         # to scan all ports in a sane time... if you have root access
         # but for this app we'll scan the top 100 ports using tcp scan
-        results = nmap.nmap_tcp_scan(item.address, args='-F')
-        ports = '-'
-        log.info(results['runtime']['summary'])
+        results = nmap.nmap_tcp_scan(item.address, args="-F")
+        ports = "-"
+        log.info(results["runtime"]["summary"])
         for k, v in results.items():
-            if k != 'stats' and k != 'runtime':
-                ports = ','.join(port['portid'] for port in v['ports'])
+            if k != "stats" and k != "runtime":
+                ports = ",".join(port["portid"] for port in v["ports"])
 
         # load item again. so it's persistent in the scoped session
         scan_item = session.query(Scan).get(item.id)
 
         scan_item.ports = ports
+        scan_item.updated_date = datetime.utcnow()
         log.info(f'"{item.address}" has open ports on: {scan_item.ports}')
         session.commit()
 
+    def __len__(self, *args, **kwargs) -> int:
+        return len(self._futures)
+
     def __del__(self, *args, **kwargs) -> None:
-        log.info(f'Stopping the scan queue listener!')
+        log.info(f"Stopping the scan queue listener!")
         self.listening = False
         for future in self._futures:
             future.cancel()

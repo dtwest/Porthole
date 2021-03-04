@@ -43,9 +43,10 @@ export const ScanTable = (props: {dataSource: string}) => {
       <DataGrid 
         rows={state.scans.map(s => ({...s, id: s.uri.split('/').pop()}))} 
         columns={[
-          { field: 'id', headerName: 'ID', flex: 0.25 },
-          { field: 'address', headerName: 'Address', flex: 0.25 },
-          { field: 'ports', headerName: 'Ports', flex: 0.50 },
+          { field: 'id', headerName: 'ID', flex: 0.10 },
+          { field: 'address', headerName: 'Address', flex: 0.20 },
+          { field: 'ports', headerName: 'Ports', flex: 0.30 },
+          { field: 'updated_date', headerName: 'updated Date', flex: 0.25 },
           { field: 'created_date', headerName: 'Created Date', flex: 0.25 },
         ]}
         rowCount={state.total}
